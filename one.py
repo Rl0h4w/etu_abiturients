@@ -2,7 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import re
-
+import asyncio
 
 class Browser:
     def __init__(self):
@@ -22,23 +22,23 @@ class Abiturient:
     def __init__(self, num, score):
         self.num = num
         self.score = score
-        self.faculties = set()
+        self.faculty_priority = dict()
 
     def __str__(self) -> str:
         return f"Num: {self.num}    Score: {self.score}"
 
-    def add_faculty(self, faculty):
-        self.faculties.add(faculty)
+    def add_faculty(self, faculty, priority, ):
+        self.faculty_priority[priority] = faculty
 
 
 class Faculty:
     def __init__(self, name, max_ab):
         self.name = name
         self.max_ab = max_ab
-        self.__array = set()
+        self.__array = []
 
     def add(self, obj):
-        self.__array.add(obj)
+        self.__array.append(obj)
 
     def __str__(self) -> str:
         return f"Name: {self.name}  MAX: {self.max_ab}"
@@ -74,22 +74,22 @@ def leti():
             lambda x: x and all(y.isdigit() for y in (x[0], x[2], *x[4:10])),
             get_table(site),
         ):
-            abirurient = Abiturient(int("".join(re.findall(r"\d+", j[1]))), int(j[4]))
-            if faculty_str not in map(lambda x: x.name, faculties):
-                faculty = Faculty(faculty_str, max_abiturients)
-                faculties.add(faculty)
-            else:
-                faculty = next(i for i in faculties if i.name == faculty_str)
-            abirurient.add_faculty(faculty)
-            faculty.add(abirurient)
-            abiturients.add(abirurient)
-    for abiturient in abiturients:
-        
-
-
-
-
-
+            num = int(''.join(re.findall('\d', j[1])))
+            priority = int(j[2])
+            score = int(j[4])
+            admission = True if j[-3] == 'Да' else False
+            original = True if j[-2] == 'Да' else False
+            if original:
+                searched = [i for i in filter(lambda x: x.num == num, abiturients)]
+                if searched is None:
+                    abiturient = Abiturient(num, score=score if not admission else 300)
+                    abiturients.add(abiturient)
+                else:
+                    searched[0].add_faculty(faculty_str, priority)
+            
+            print(*abiturients, sep='\n')
+                    
+                
 
 if __name__ == "__main__":
     leti()
