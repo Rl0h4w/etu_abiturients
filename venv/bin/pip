@@ -1,4 +1,4 @@
-#!/home/ns/PycharmProjects/minscoreparser/venv/bin/python
+#!/home/ns/Documents/Projects/leti_abiturients_predict/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
