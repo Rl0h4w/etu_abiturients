@@ -117,7 +117,7 @@ def leti():
             else:
                 abiturients[abiturient_dct['num']].add_faculty(abiturient_dct['faculty'], abiturient_dct['priority'])
 
-    for ab in sorted(abiturients.values(), key=lambda x: [x.score, list(x.faculty_priority.values())]):
+    for ab in sorted(abiturients.values(), key=lambda x: [x.score, list(x.faculty_priority.values())], reverse=True):
         for priority, faculty_str in ab.faculty_priority.items():
             faculty = faculties[faculty_str]
             if len(faculty.array) < faculty.max_ab:
@@ -132,8 +132,8 @@ def leti():
     for s, n in faculties.items():
         print(s)
         print(*n.array, sep='\n')
-        print('**********')
-
+        print('************************************')
+    
 
 
 if __name__ == "__main__":
