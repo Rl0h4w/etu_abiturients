@@ -63,6 +63,8 @@ def get_table(sp):
 
 def leti():
     raw_dct = dict()
+    faculties = dict()
+    abiturients = dict()
     try:
         with open('data.json', 'r') as file:
             data = json.load(file)
@@ -74,8 +76,8 @@ def leti():
             browser = Browser()
             url_lists = r"https://abit.etu.ru/ru/postupayushhim/bakalavriat-i-specialitet/konkursnye-spiski/?competitions=1-2"
             url_base = r"https://abit.etu.ru/"
-            faculties = dict()
-            abiturients = dict()
+            faculties_raw = dict()
+            abiturients_raw = []
 
             for i in filter(
                     lambda x: len(x) == 4 and x[2] != "-", get_table(browser.get_html(url_lists))
@@ -83,15 +85,14 @@ def leti():
 
                 url_faculty = url_base + i[2]
                 site = browser.get_html(url_faculty)
-
                 faculty_str = str(site.find("h2").text)
                 max_abiturients = site.find(
                     "div",
                     class_="col-md-3 d-flex justify-content-center align-items-center places-list",
                 )
                 max_abiturients = int(re.search(r"\d+", max_abiturients.text).group())
-                if faculty_str not in faculties:
-                    faculties[faculty_str] = max_abiturients
+                if faculty_str not in faculties_raw:
+                    faculties_raw[faculty_str] = max_abiturients
 
                 for j in filter(
                         lambda x: x and all(y.isdigit() for y in (x[0], x[2], *x[4:10])),
@@ -102,17 +103,23 @@ def leti():
                     score = int(j[4])
                     admission = True if j[-3] == 'Да' else False
                     original = True if j[-2] == 'Да' else False
-                    if num in abiturients:
-                        abiturients[num]['faculty'].append(faculty_str)
-                    else:
-                        abiturients[num] = {'faculty': [faculty_str], 'priority': priority,
-                                        'score': 300 if score < 300 and admission else score,
-                                        'admission': admission, original: original}
+                    abiturients_raw.append({'num': num, 'faculty': faculty_str, 'priority': priority,
+                                            'score': 300 if score < 300 and admission else score,
+                                            'admission': admission, 'original': original})
 
-            raw_dct['abiturients'] = abiturients
-            raw_dct['faculties'] = faculties
+            raw_dct['abiturients'] = abiturients_raw
+            raw_dct['faculties'] = faculties_raw
             json.dump(raw_dct, file)
-    print(raw_dct)
+    for faculty_str, max_abiturients in raw_dct['faculties'].items():
+        faculties[faculty_str] = Faculty(faculty_str, max_abiturients)
+    for abiturient_dct in raw_dct['abiturients']:
+        if abiturient_dct['original']:
+            if abiturient_dct['num'] not in abiturients:
+                ab = Abiturient(abiturient_dct['num'], abiturient_dct['score'])
+                ab.add_faculty(abiturient_dct['faculty'], abiturient_dct['priority'])
+                abiturients[abiturient_dct['num']] = ab
+            else:
+                abiturients[abiturient_dct['num']].add_faculty(abiturient_dct['faculty'], abiturient_dct['priority'])
 
 
 if __name__ == "__main__":
