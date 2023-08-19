@@ -36,24 +36,20 @@ class Faculty:
     def __init__(self, name, max_ab):
         self.name = name
         self.max_ab = max_ab
-        self.__array = []
+        self.array = []
 
     def add(self, obj):
-        self.__array.append(obj)
+        self.array.append(obj)
+        
 
     def __str__(self) -> str:
         return f"Name: {self.name}  MAX: {self.max_ab}"
 
-    def filter(self):
-        self.__array.sort(key=lambda x: x.score, reverse=True)
 
     def show(self):
         print(*self.__array, self.max_ab, sep='\n')
 
 
-class University:
-    def __init__(self, faculties):
-        self.faculties = faculties
 
 
 def get_table(sp):
@@ -120,6 +116,24 @@ def leti():
                 abiturients[abiturient_dct['num']] = ab
             else:
                 abiturients[abiturient_dct['num']].add_faculty(abiturient_dct['faculty'], abiturient_dct['priority'])
+
+    for ab in sorted(abiturients.values(), key=lambda x: [x.score, list(x.faculty_priority.values())]):
+        for priority, faculty_str in ab.faculty_priority.items():
+            faculty = faculties[faculty_str]
+            if len(faculty.array) < faculty.max_ab:
+                faculty.add(ab)
+                break
+            elif len(faculty.array) == faculty.max_ab:
+                    if ab in faculty.array:
+                        next
+                    else:
+                        break
+    
+    for s, n in faculties.items():
+        print(s)
+        print(*n.array, sep='\n')
+        print('**********')
+
 
 
 if __name__ == "__main__":
